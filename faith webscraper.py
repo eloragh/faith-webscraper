@@ -11,7 +11,7 @@ load_dotenv('config.env')
 CLIENT_ID = os.getenv('CLIENT_ID')
 SECRET = os.getenv('SECRET')
 USER_AGENT = os.getenv('USER_AGENT')
-OUTPUT = 'multi_subreddit_ukrainian_refugee.csv'
+OUTPUT = 'multi_subreddit_ukrainian_refugee.xlsx'
 
 # creds
 reddit = praw.Reddit(
@@ -78,5 +78,5 @@ for sub, query in subreddits_queries.items():
 df = pd.DataFrame(all_posts)
 df.drop_duplicates(subset=['title', 'text'])
 
-df.to_csv(OUTPUT, index=False)
+df.to_excel(OUTPUT, index=False)
 print(f"Saved {len(df)} posts to {OUTPUT}")

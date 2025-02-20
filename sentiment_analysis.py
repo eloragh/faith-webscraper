@@ -2,7 +2,7 @@ import pandas as pd
 from textblob import TextBlob
 
 DATA = 'multi_subreddit_ukrainian_refugee.csv'
-OUTPUT = 'multi_subreddit_ukrainian_refugee_sentiment.csv'
+OUTPUT = 'multi_subreddit_ukrainian_refugee_sentiment.xlsx'
 
 df = pd.read_csv(DATA)
 
@@ -25,5 +25,5 @@ def get_sentiment(text):
 df['combined_text'] = df['title'] + ' ' + df['text'].fillna('')
 df['sentiment'] = df['combined_text'].apply(get_sentiment)
 
-df.to_csv(OUTPUT, index=False)
+df.to_excel(OUTPUT, index=False)
 print(f"Saved {len(df)} posts to {OUTPUT}")
