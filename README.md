@@ -2,7 +2,7 @@
 
 ### This is for your thesis!
 
-The only file you need to look at is [the excel file](multi_subreddit_ukrainian_refugee_sentiment.xlsx). It's large so you'll need to download it.
+The only file you need to look at is [the excel file](multi_subreddit_ukrainian_refugee.xlsx). It's large so you'll need to download it.
 
 You can look at the python files if you want! They don't bite :) but they might not make any sense.
 
