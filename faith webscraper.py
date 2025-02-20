@@ -50,7 +50,7 @@ start_date = datetime(2022, 2, 24, tzinfo=timezone.utc)  # the war started Febru
 start_timestamp = int(start_date.timestamp())  # Convert to Unix timestamp
 
 # get those posts bitch!
-def get_posts (subreddit_name, query, limit=10000, start=start_timestamp):
+def get_posts(subreddit_name, query, limit=10000, start=start_timestamp):
 
     subreddit = reddit.subreddit(subreddit_name)
     posts = []
@@ -83,5 +83,6 @@ df.drop_duplicates(subset=['title', 'text'])
 df['combined_text'] = df['title'] + ' ' + df['text'].fillna('')
 df['sentiment'] = df['combined_text'].apply(get_sentiment)
 
+# save it in an excel
 df.to_excel(OUTPUT, index=False)
 print(f"Saved {len(df)} posts to {OUTPUT}")
