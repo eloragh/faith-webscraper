@@ -1,11 +1,6 @@
 import pandas as pd
 from textblob import TextBlob
 
-DATA = 'multi_subreddit_ukrainian_refugee.csv'
-OUTPUT = 'multi_subreddit_ukrainian_refugee_sentiment.xlsx'
-
-df = pd.read_csv(DATA)
-
 def get_sentiment(text):
     analysis = TextBlob(str(text))
     polarity = analysis.sentiment.polarity # polarity scores from -1 to 1
@@ -20,10 +15,5 @@ def get_sentiment(text):
     else:
         return 'neutral'
 
-
-# we will combine the title and text so we can analyze both
-df['combined_text'] = df['title'] + ' ' + df['text'].fillna('')
-df['sentiment'] = df['combined_text'].apply(get_sentiment)
-
-df.to_excel(OUTPUT, index=False)
-print(f"Saved {len(df)} posts to {OUTPUT}")
+if __name__ == '__main__':
+    get_sentiment()

@@ -4,6 +4,7 @@ import praw
 import pandas as pd
 from dotenv import load_dotenv
 from datetime import datetime, timezone
+from sentiment_analysis import get_sentiment
 
 load_dotenv('config.env')
 
@@ -77,6 +78,10 @@ for sub, query in subreddits_queries.items():
 # turn posts into a dataframe
 df = pd.DataFrame(all_posts)
 df.drop_duplicates(subset=['title', 'text'])
+
+# we will combine the title and text so we can analyze both
+df['combined_text'] = df['title'] + ' ' + df['text'].fillna('')
+df['sentiment'] = df['combined_text'].apply(get_sentiment)
 
 df.to_excel(OUTPUT, index=False)
 print(f"Saved {len(df)} posts to {OUTPUT}")
