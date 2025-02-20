@@ -2,7 +2,7 @@
 
 ### This is for your thesis!
 
-The only file you need to look at is (the csv file)[].
+The only file you need to look at is [the csv file](multi_subreddit_ukrainian_refugee_sentiment.csv).
 
 You can look at the python files if you want! They don't bite :) but they might not make any sense.
 
