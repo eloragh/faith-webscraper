@@ -11,12 +11,7 @@ load_dotenv('config.env')
 CLIENT_ID = os.getenv('CLIENT_ID')
 SECRET = os.getenv('SECRET')
 USER_AGENT = os.getenv('USER_AGENT')
-LIMIT = 10000
-QUERY = 'Ukraine OR refugee OR war OR Ukrainian refugee'
 OUTPUT = 'multi_subreddit_ukrainian_refugee.csv'
-START_YEAR = 2022
-START_MONTH = 2
-START_DATE = 24
 
 # creds
 reddit = praw.Reddit(
@@ -25,14 +20,32 @@ reddit = praw.Reddit(
     user_agent=USER_AGENT
 )
 
-subreddits_querries = {
-    'poland': 'Ukraine OR refugee OR war OR Ukrainian refugee',
-    "polska": "Ukraina uchodźcy",
-    "polish": "Ukrainian migration OR Ukraine OR refugee OR war OR Ukrainian refugee"
+subreddits_queries = {
+    "poland": [
+        "Ukrainian refugees", 
+        "Ukrainians in Poland", 
+        "Ukrainian migration", 
+        "Ukrainian asylum", 
+        "Poland refugees", 
+        "Poland border crisis"
+    ],
+    "polska": [
+        "Ukraina uchodźcy", 
+        "ukraińscy uchodźcy", 
+        "uchodźcy w Polsce", 
+        "migracja Ukraina", 
+        "granica Polska Ukraina"
+    ],
+    "polish": [
+        "Ukrainian migration", 
+        "Polish language refugees", 
+        "learning Polish as refugee", 
+        "Ukrainian asylum in Poland"
+    ]
 }
 
 # define the date range
-start_date = datetime(START_YEAR, START_MONTH, START_DATE, tzinfo=timezone.utc)  # the war started February 24, 2022
+start_date = datetime(2022, 2, 24, tzinfo=timezone.utc)  # the war started February 24, 2022
 start_timestamp = int(start_date.timestamp())  # Convert to Unix timestamp
 
 # get those posts bitch!
@@ -57,7 +70,7 @@ def get_posts (subreddit_name, query, limit=10000, start=start_timestamp):
 
 all_posts = []
 # get posts from each subreddit and add them all to one list
-for sub, query in subreddits_querries.items():
+for sub, query in subreddits_queries.items():
     print(f'Fetching posts from r/{sub} with query: {query}')
     all_posts.extend(get_posts(sub, query))
 
