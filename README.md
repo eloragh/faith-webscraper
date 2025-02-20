@@ -6,6 +6,34 @@ The only file you need to look at is [the csv file](multi_subreddit_ukrainian_re
 
 You can look at the python files if you want! They don't bite :) but they might not make any sense.
 
+Here are the terms I used to search each subreddit
+
+```python
+subreddits_queries = {
+    "poland": [
+        "Ukrainian refugees", 
+        "Ukrainians in Poland", 
+        "Ukrainian migration", 
+        "Ukrainian asylum", 
+        "Poland refugees", 
+        "Poland border crisis"
+    ],
+    "polska": [
+        "Ukraina uchodźcy", 
+        "ukraińscy uchodźcy", 
+        "uchodźcy w Polsce", 
+        "migracja Ukraina", 
+        "granica Polska Ukraina"
+    ],
+    "polish": [
+        "Ukrainian migration", 
+        "Polish language refugees", 
+        "learning Polish as refugee", 
+        "Ukrainian asylum in Poland"
+    ]
+}
+```
+
 They barely make sense to me.
 
 I hope this helps!!! We all love you <3
