@@ -89,7 +89,7 @@ def translate_text(text, index, src_lang="pl", dest_lang="en", max_retries=3):
             
         except Exception as e:
             wait_time = 2 ** retries  # exponential backoff (2, 4, 8, 16 sec)
-            print(f"Row {index} translation error: {e}. Retrying in {wait_time} seconds... ({retries+1}/{max_retries})")
+            #print(f"Row {index} translation error: {e}. Retrying in {wait_time} seconds... ({retries+1}/{max_retries})")
             time.sleep(wait_time)  # google hates me
             retries += 1  
 
@@ -149,22 +149,23 @@ def main():
     df.drop_duplicates(subset=['url'])
 
     # combine title and text first
-    df['combined_text'] = df['title'] + ' ' + df['text']
+    df['combined text'] = df['title'] + ' ' + df['text']
     print(f"Unprocessed output: {len(df)} posts.")
 
     # translate only for r/Polska
-    df['combined_text_en'] = df.apply(
-        lambda row: translate_text(row['combined_text'], row.name) if row['subreddit'] == 'Polska' 
-        else row['combined_text'],
+    print(f'Translating...')
+    df['combined text en'] = df.apply(
+        lambda row: translate_text(row['combined text'], row.name) if row['subreddit'] == 'Polska' 
+        else row['combined text'],
         axis=1
     )
 
     # drop rows where Polish text failed to translate
-    failed_translations = (df["combined_text_en"] == "fail").sum()
+    failed_translations = (df["combined text en"] == "fail").sum()
     print(f"{failed_translations} posts failed to translate and were dropped.")
-    df = df[df['combined_text_en'] != "fail"]
+    df = df[df['combined text en'] != "fail"]
 
-    df[['sia_sentiment', 'simple_sentiment']] = df['combined_text_en'].apply(get_sentiment).apply(pd.Series)
+    df[['sia sentiment', 'simple sentiment']] = df['combined text en'].apply(get_sentiment).apply(pd.Series)
 
     # save it in an excel
     df.to_excel(OUTPUT, index=False)
