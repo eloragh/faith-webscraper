@@ -1,10 +1,14 @@
 # imports
-import os
-import praw
-import pandas as pd
 from dotenv import load_dotenv
 from datetime import datetime, timezone
-from sentiment_analysis import get_sentiment
+from googletrans import Translator
+from nltk.sentiment import SentimentIntensityAnalyzer
+import os
+import re
+import nltk
+import praw
+import time
+import pandas as pd
 
 load_dotenv('config.env')
 
@@ -12,7 +16,17 @@ load_dotenv('config.env')
 CLIENT_ID = os.getenv('CLIENT_ID')
 SECRET = os.getenv('SECRET')
 USER_AGENT = os.getenv('USER_AGENT')
-OUTPUT = 'multi_subreddit_ukrainian_refugee.xlsx'
+OUTPUT = 'ukrainian_migration_to_poland_data.xlsx'
+
+# nltk sentiment lexicon
+# this lexicon is specifically designed to be used for social media analysis :)
+nltk.download('vader_lexicon')
+
+# initialize sentiment analysis object
+sia = SentimentIntensityAnalyzer()
+
+# initialize translator object
+translator = Translator()
 
 # creds
 reddit = praw.Reddit(
@@ -23,66 +37,138 @@ reddit = praw.Reddit(
 
 subreddits_queries = {
     "poland": [
-        "Ukrainian refugees", 
-        "Ukrainians in Poland", 
-        "Ukrainian migration", 
-        "Ukrainian asylum", 
-        "Poland refugees", 
-        "Poland border crisis"
+        "ukrainian",
+        "ukraine",
+        "ukrainians in poland", 
+        "ukrainian migration", 
+        "ukrainian asylum", 
+        "poland refugees", 
+        "poland border crisis"
     ],
     "polska": [
-        "Ukraina uchodźcy", 
+        "ukraina",
+        "ukraina uchodźcy", 
         "ukraińscy uchodźcy", 
-        "uchodźcy w Polsce", 
-        "migracja Ukraina", 
-        "granica Polska Ukraina"
-    ],
-    "polish": [
-        "Ukrainian migration", 
-        "Polish language refugees", 
-        "learning Polish as refugee", 
-        "Ukrainian asylum in Poland"
+        "uchodźcy w polsce", 
+        "migracja ukraina", 
+        "granica polska ukraina"
     ]
 }
 
 # define the date range
 start_date = datetime(2022, 2, 24, tzinfo=timezone.utc)  # the war started February 24, 2022
-start_timestamp = int(start_date.timestamp())  # Convert to Unix timestamp
+start_timestamp = int(start_date.timestamp())  # Convert to unix timestamp
+
+def clean_text(text):
+
+    # removes non-alphanumeric characters from strings
+    if isinstance(text, str) and len(text) > 0:  # make sure it's a string and it's worth processing
+
+        # remove emojis and symbols using Unicode ranges
+        text = re.sub(r'[^\w\s\.,!?;:\'\"-]', '', text)
+        return text.strip()
+    
+    return text  # return unprocessed text if it's not a string
+
+def translate_text(text, index, src_lang="pl", dest_lang="en", max_retries=3):
+
+    if not text or not isinstance(text, str):  # don't bother if it's not a string
+        print(f'Row {index} is empty or not a string')
+        return 'fail'  
+
+    retries = 0
+    while retries < max_retries:
+        try:
+            if pd.isna(text) or text.strip() == '':
+                print(f'Row {index} is null')
+                return 'fail'
+            
+            translated = translator.translate(text, src=src_lang, dest=dest_lang).text
+            if translated and isinstance(translated, str):  # valid response
+                return translated
+            
+        except Exception as e:
+            wait_time = 2 ** retries  # exponential backoff (2, 4, 8, 16 sec)
+            print(f"Row {index} translation error: {e}. Retrying in {wait_time} seconds... ({retries+1}/{max_retries})")
+            time.sleep(wait_time)  # google hates me
+            retries += 1  
+
+    print(f'Row {index} translation failed.')
+    return 'fail'
+
+def get_sentiment(text):
+    # returns sia scores and simple translation of compound score
+    sia_scores = sia.polarity_scores(str(text))
+    compound = sia_scores['compound']
+
+    if compound > 0.05:
+        simple_sentiment = 'positive'
+    elif compound < 0.05:
+        simple_sentiment = 'negative'
+    else:
+        simple_sentiment = 'neutral'   
+
+    return sia_scores, simple_sentiment
 
 # get those posts bitch!
 def get_posts(subreddit_name, query, limit=10000, start=start_timestamp):
 
     subreddit = reddit.subreddit(subreddit_name)
     posts = []
+
     for post in subreddit.search(query, limit=limit):
+        sub_posts = []
         # get timestamp
         post_date = datetime.fromtimestamp(post.created_utc, timezone.utc)
         # only collect posts from February 24, 2022 and onward
         if post.created_utc >= start:
-            posts.append({
-                "title": post.title,
+
+            sub_posts.append({
+                "title": clean_text(post.title),
                 "text": post.selftext,
                 "subreddit": post.subreddit.display_name,
                 "date": post_date.strftime('%Y-%m-%d %H:%M:%S'),
                 "url": post.url
             })
+
+        posts.extend(sub_posts)
     
     return posts
 
-all_posts = []
-# get posts from each subreddit and add them all to one list
-for sub, query in subreddits_queries.items():
-    print(f'Fetching posts from r/{sub} with query: {query}')
-    all_posts.extend(get_posts(sub, query))
+def main():
 
-# turn posts into a dataframe
-df = pd.DataFrame(all_posts)
-df.drop_duplicates(subset=['title', 'text'])
+    all_posts = []
+    # get posts from each subreddit and add them all to one list
+    for sub, queries in subreddits_queries.items():
+        for query in queries:
+            print(f'Fetching posts from r/{sub} with query: {query}')
+            all_posts.extend(get_posts(sub, query))
 
-# we will combine the title and text so we can analyze both
-df['combined_text'] = df['title'] + ' ' + df['text'].fillna('')
-df['sentiment'] = df['combined_text'].apply(get_sentiment)
+    # turn posts into a dataframe
+    df = pd.DataFrame(all_posts)
+    df.drop_duplicates(subset=['url'])
 
-# save it in an excel
-df.to_excel(OUTPUT, index=False)
-print(f"Saved {len(df)} posts to {OUTPUT}")
+    # combine title and text first
+    df['combined_text'] = df['title'] + ' ' + df['text']
+    print(f"Unprocessed output: {len(df)} posts.")
+
+    # translate only for r/Polska
+    df['combined_text_en'] = df.apply(
+        lambda row: translate_text(row['combined_text'], row.name) if row['subreddit'] == 'Polska' 
+        else row['combined_text'],
+        axis=1
+    )
+
+    # drop rows where Polish text failed to translate
+    failed_translations = (df["combined_text_en"] == "fail").sum()
+    print(f"{failed_translations} posts failed to translate and were dropped.")
+    df = df[df['combined_text_en'] != "fail"]
+
+    df[['sia_sentiment', 'simple_sentiment']] = df['combined_text_en'].apply(get_sentiment).apply(pd.Series)
+
+    # save it in an excel
+    df.to_excel(OUTPUT, index=False)
+    print(f"Saved {len(df)} posts to {OUTPUT}")
+
+if __name__ == '__main__':
+    main()
