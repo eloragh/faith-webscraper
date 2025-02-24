@@ -4,7 +4,7 @@
 
 The only file you need to look at is [the excel file](ukrainian_migration_to_poland_data.xlsx). It's large so you'll need to download it.
 
-You can look at the python files if you want! They don't bite :) but they might not make any sense.
+You can look at the python file if you want! But they might not make any sense.
 
 They barely make sense to me.
 
