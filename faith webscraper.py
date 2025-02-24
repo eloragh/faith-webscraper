@@ -89,7 +89,6 @@ def translate_text(text, index, src_lang="pl", dest_lang="en", max_retries=3):
             
         except Exception as e:
             wait_time = 2 ** retries  # exponential backoff (2, 4, 8, 16 sec)
-            #print(f"Row {index} translation error: {e}. Retrying in {wait_time} seconds... ({retries+1}/{max_retries})")
             time.sleep(wait_time)  # google hates me
             retries += 1  
 
@@ -100,13 +99,14 @@ def get_sentiment(text):
     # returns sia scores and simple translation of compound score
     sia_scores = sia.polarity_scores(str(text))
     compound = sia_scores['compound']
-
+    
+    # anything slightly positive or negative gets a label
     if compound > 0.05:
         simple_sentiment = 'positive'
     elif compound < -0.05:
         simple_sentiment = 'negative'
     else:
-        simple_sentiment = 'neutral'   
+        simple_sentiment = 'neutral'   # will only really label true neutrals as this
 
     return sia_scores, simple_sentiment
 
@@ -165,6 +165,7 @@ def main():
     print(f"{failed_translations} posts failed to translate and were dropped.")
     df = df[df['combined text en'] != "fail"]
 
+    # raw and simplified sentiment scores
     df[['sia sentiment', 'simple sentiment']] = df['combined text en'].apply(get_sentiment).apply(pd.Series)
 
     # save it in an excel

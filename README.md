@@ -13,25 +13,21 @@ Here are the terms I used to search each subreddit:
 ```python
 subreddits_queries = {
     "poland": [
-        "Ukrainian refugees", 
-        "Ukrainians in Poland", 
-        "Ukrainian migration", 
-        "Ukrainian asylum", 
-        "Poland refugees", 
-        "Poland border crisis"
+        "ukrainian",
+        "ukraine",
+        "ukrainians in poland", 
+        "ukrainian migration", 
+        "ukrainian asylum", 
+        "poland refugees", 
+        "poland border crisis"
     ],
     "polska": [
-        "Ukraina uchodźcy", 
+        "ukraina",
+        "ukraina uchodźcy", 
         "ukraińscy uchodźcy", 
-        "uchodźcy w Polsce", 
-        "migracja Ukraina", 
-        "granica Polska Ukraina"
-    ],
-    "polish": [
-        "Ukrainian migration", 
-        "Polish language refugees", 
-        "learning Polish as refugee", 
-        "Ukrainian asylum in Poland"
+        "uchodźcy w polsce", 
+        "migracja ukraina", 
+        "granica polska ukraina"
     ]
 }
 ```
