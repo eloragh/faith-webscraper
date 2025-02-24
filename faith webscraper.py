@@ -103,7 +103,7 @@ def get_sentiment(text):
 
     if compound > 0.05:
         simple_sentiment = 'positive'
-    elif compound < 0.05:
+    elif compound < -0.05:
         simple_sentiment = 'negative'
     else:
         simple_sentiment = 'neutral'   
