@@ -31,4 +31,7 @@ subreddits_queries = {
     ]
 }
 ```
+
+The visuals can be found in [this folder](visuals)
+
 I hope this helps!!! We all love you <3
